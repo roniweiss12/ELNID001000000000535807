@@ -86,7 +86,7 @@ count_table_to_heatmap <- function(count_table, G_list, grouping_vector, plot_pa
   # dev.off()
 }
 
-RESULTS_PATH_RNA <- "~/ELNID001000000000486355/DiffAnalysis/RNA/"
+RESULTS_PATH_RNA <- "~/ELNID001000000000535807/DiffAnalysis/RNA/"
 counts_table_file <- "~/ELNID001000000000466898/bulkRNAseq_pipeline/output/rnaseq/counts/counts.txt"
 metadata <- data.frame(patientID = c("CD28", "CD20", "CD3", "CD26", "CD14", "CD6"),
                        sex = c("female", "female", "female", "male", "female", "male"), 

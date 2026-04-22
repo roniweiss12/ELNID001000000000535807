@@ -5,7 +5,7 @@ plot_gene_track <- function(
     atac_hf1_bed, atac_hf2_bed, atac_hf3_bed,
     atac_lf1_bed, atac_lf2_bed, atac_lf3_bed,
     ser_hf_bigwig_file, ser_mf_bigwig_file,
-    ser_hf_bed, ser_mf_bed,  # <-- new BED files
+    ser_hf_bed, ser_mf_bed, 
     rna_hf_bw, 
     rna_lf_bw,
     genome = "hg38",
@@ -88,10 +88,12 @@ plot_gene_track <- function(
   }
   
   # --- 5. BED tracks helper
-  import_bed <- function(bed_file, chr, color = "blue", opacity = 0.5) {
+  import_bed <- function(bed_file, chr, region_start, region_end, color = "blue", opacity = 0.5) {
     gr <- rtracklayer::import(bed_file)
-    gr <- gr[seqnames(gr) == chr]  # filter by gene chromosome
+    gr <- gr[seqnames(gr) == paste0("chr",chr)]  # filter by gene chromosome
     AnnotationTrack(
+      start = region_start,
+      end = region_end,
       range = gr,
       genome = genome,
       chromosome = chr,
@@ -124,14 +126,14 @@ plot_gene_track <- function(
   overlay_mf <- OverlayTrack(trackList = mf_tracks)
   
   hf_atac_bed_tracks <- list(
-    import_bed(atac_hf1_bed, chr, hf_atac_color),
-    import_bed(atac_hf2_bed, chr, hf_atac_color),
-    import_bed(atac_hf3_bed, chr, hf_atac_color)
+    import_bed(atac_hf1_bed, chr, region_start, region_end, hf_atac_color),
+    import_bed(atac_hf2_bed, chr, region_start, region_end, hf_atac_color),
+    import_bed(atac_hf3_bed, chr, region_start, region_end, hf_atac_color)
   )
   mf_atac_bed_tracks <- list(
-    import_bed(atac_lf1_bed, chr, mf_atac_color),
-    import_bed(atac_lf2_bed, chr, mf_atac_color),
-    import_bed(atac_lf3_bed, chr, mf_atac_color)
+    import_bed(atac_lf1_bed, chr, region_start, region_end, mf_atac_color),
+    import_bed(atac_lf2_bed, chr, region_start, region_end, mf_atac_color),
+    import_bed(atac_lf3_bed, chr, region_start, region_end, mf_atac_color)
   )
   overlay_hf_atac_bed <- OverlayTrack(trackList = hf_atac_bed_tracks)
   overlay_mf_atac_bed <- OverlayTrack(trackList = mf_atac_bed_tracks)
@@ -141,8 +143,8 @@ plot_gene_track <- function(
   ser_mf <- import_bw(ser_mf_bigwig_file, chr, region_start, region_end, mf_ser_color, "H3Q5ser - LF", ylim_top = ct_y_top)
   
   # --- 8. CUT&TAG BED tracks
-  bed_ser_hf <- import_bed(ser_hf_bed, chr, color = hf_ser_color)
-  bed_ser_mf <- import_bed(ser_mf_bed, chr, color = mf_ser_color)
+  bed_ser_hf <- import_bed(ser_hf_bed, chr, region_start, region_end, color = hf_ser_color)
+  bed_ser_mf <- import_bed(ser_mf_bed, chr, region_start, region_end, color = mf_ser_color)
   
   # --- 9. RNA-seq
   # hf_rna_tracks <- list(
@@ -168,7 +170,7 @@ plot_gene_track <- function(
       ser_hf, bed_ser_hf, 
       ser_mf, bed_ser_mf,
       overlay_hf, overlay_hf_atac_bed, 
-      overlay_mf,overlay_hf_atac_bed,
+      overlay_mf,overlay_mf_atac_bed,
       hf_rna, mf_rna
     ),
     from = region_start,
@@ -178,25 +180,26 @@ plot_gene_track <- function(
   )
 }
 atac_hf1_bw <- "~/ELNID001000000000486355/ATACseq/BigWig/03_0KC9_02SLTytgat_High-fatigue-1_ATAC_hs_i29-48_REP1.mLb.clN.bigWig" 
-atac_hf2_bw <- "~/ELNID001000000000486355/Q52867_ATACseq/BigWig/08_0KXQ_02UCAUMC_High-fatigue-2_ATAC_i6-522_REP1.mLb.clN.bigWig" 
-atac_hf3_bw <- "~/ELNID001000000000486355/Q52867_ATACseq/BigWig/09_0KXR_02UCAUMC_High-fatigue-3_ATAC_i7-15_REP1.mLb.clN.bigWig"
-atac_lf1_bw <- "~/ELNID001000000000486355/ATACseq/BigWig/01_0KC8_02SLTytgat_Medium-fatigue-1_ATAC_hs_i28-47_REP1.mLb.clN.bigWig" 
-atac_lf2_bw <- "~/ELNID001000000000486355/Q52867_ATACseq/BigWig/05_0KXO_02UCAUMC_Medium-fatigue-2_ATAC_hs_i4-4_REP1.mLb.clN.bigWig" 
-atac_lf3_bw <- "~/ELNID001000000000486355/Q52867_ATACseq/BigWig/06_0KXP_02UCAUMC_Medium-fatigue-3_ATAC_i5-521_REP1.mLb.clN.bigWig"
-atac_hf1_bed <- "~/ELNID001000000000486355/ATACseq/PeakCalling/macs2/03_0KC9_02SLTytgat_High-fatigue-1_ATAC_hs_i29-48_REP1.mLb.clN_peaks.narrowPeak" 
-atac_hf2_bed <- "~/ELNID001000000000486355/Q52867_ATACseq/PeakCalling/macs2/08_0KXQ_02UCAUMC_High-fatigue-2_ATAC_i6-522_REP1.mLb.clN_peaks.narrowPeak" 
-atac_hf3_bed <- "~/ELNID001000000000486355/Q52867_ATACseq/PeakCalling/macs2/09_0KXR_02UCAUMC_High-fatigue-3_ATAC_i7-15_REP1.mLb.clN_peaks.narrowPeak"
-atac_lf1_bed <- "~/ELNID001000000000486355/ATACseq/PeakCalling/macs2/01_0KC8_02SLTytgat_Medium-fatigue-1_ATAC_hs_i28-47_REP1.mLb.clN_peaks.narrowPeak" 
-atac_lf2_bed <- "~/ELNID001000000000486355/Q52867_ATACseq/PeakCalling/macs2/05_0KXO_02UCAUMC_Medium-fatigue-2_ATAC_hs_i4-4_REP1.mLb.clN_peaks.narrowPeak" 
-atac_lf3_bed <- "~/ELNID001000000000486355/Q52867_ATACseq/PeakCalling/macs2/06_0KXP_02UCAUMC_Medium-fatigue-3_ATAC_i5-521_REP1.mLb.clN_peaks.narrowPeak"
-ser_hf_bigwig_file <- "~/ELNID001000000000486355/CUT_TAG/BigWig/03_0KCB_02SMTytgat_High-fatigue-1_H3Q5ser_hs_i702-508_R1.bigWig" 
-ser_mf_bigwig_file <- "~/ELNID001000000000486355/CUT_TAG/BigWig/01_0KCA_02SMTytgat_Medium-fatigue-1_H3Q5ser_hs_i701-508_R1.bigWig"
-ser_hf_bed_file <- "~/ELNID001000000000486355/CUT_TAG/PeakCalling/macs2/03_0KCB_02SMTytgat_High-fatigue-1_H3Q5ser_hs_i702-508_R1.macs2.peaks.cut.bed" 
-ser_mf_bed_file <- "~/ELNID001000000000486355/CUT_TAG/PeakCalling/macs2/01_0KCA_02SMTytgat_Medium-fatigue-1_H3Q5ser_hs_i701-508_R1.macs2.peaks.cut.bed" 
-rna_hf_bw <- "~/ELNID001000000000486355/RNAseq/BIGWIG/02_P-02SNTytgat_High-fatigue-1_RNA-seq_hs_iA-D8.bw" 
-rna_lf_bw <- "~/ELNID001000000000486355/RNAseq/BIGWIG/01_P-02SNTytgat_Medium-fatigue-1_RNA-seq_hs_iA-C8.bw" 
+atac_hf2_bw <- "~/ELNID001000000000535807/Q52867_ATACseq/BigWig/08_0KXQ_02UCAUMC_High-fatigue-2_ATAC_i6-522_REP1.mLb.clN.bigWig" 
+atac_hf3_bw <- "~/ELNID001000000000535807/Q52867_ATACseq/BigWig/09_0KXR_02UCAUMC_High-fatigue-3_ATAC_i7-15_REP1.mLb.clN.bigWig"
+atac_lf1_bw <- "~/ELNID001000000000535807/ATACseq/BigWig/01_0KC8_02SLTytgat_Medium-fatigue-1_ATAC_hs_i28-47_REP1.mLb.clN.bigWig" 
+atac_lf2_bw <- "~/ELNID001000000000535807/Q52867_ATACseq/BigWig/05_0KXO_02UCAUMC_Medium-fatigue-2_ATAC_hs_i4-4_REP1.mLb.clN.bigWig" 
+atac_lf3_bw <- "~/ELNID001000000000535807/Q52867_ATACseq/BigWig/06_0KXP_02UCAUMC_Medium-fatigue-3_ATAC_i5-521_REP1.mLb.clN.bigWig"
+atac_hf1_bed <- "~/ELNID001000000000535807/ATACseq/PeakCalling/macs2/03_0KC9_02SLTytgat_High-fatigue-1_ATAC_hs_i29-48_REP1.mLb.clN_peaks.narrowPeak" 
+atac_hf2_bed <- "~/ELNID001000000000535807/Q52867_ATACseq/PeakCalling/macs2/08_0KXQ_02UCAUMC_High-fatigue-2_ATAC_i6-522_REP1.mLb.clN_peaks.narrowPeak" 
+atac_hf3_bed <- "~/ELNID001000000000535807/Q52867_ATACseq/PeakCalling/macs2/09_0KXR_02UCAUMC_High-fatigue-3_ATAC_i7-15_REP1.mLb.clN_peaks.narrowPeak"
+atac_lf1_bed <- "~/ELNID001000000000535807/ATACseq/PeakCalling/macs2/01_0KC8_02SLTytgat_Medium-fatigue-1_ATAC_hs_i28-47_REP1.mLb.clN_peaks.narrowPeak" 
+atac_lf2_bed <- "~/ELNID001000000000535807/Q52867_ATACseq/PeakCalling/macs2/05_0KXO_02UCAUMC_Medium-fatigue-2_ATAC_hs_i4-4_REP1.mLb.clN_peaks.narrowPeak" 
+atac_lf3_bed <- "~/ELNID001000000000535807/Q52867_ATACseq/PeakCalling/macs2/06_0KXP_02UCAUMC_Medium-fatigue-3_ATAC_i5-521_REP1.mLb.clN_peaks.narrowPeak"
+ser_hf_bigwig_file <- "~/ELNID001000000000535807/CUT_TAG/BigWig/03_0KCB_02SMTytgat_High-fatigue-1_H3Q5ser_hs_i702-508_R1.bigWig" 
+ser_mf_bigwig_file <- "~/ELNID001000000000535807/CUT_TAG/BigWig/01_0KCA_02SMTytgat_Medium-fatigue-1_H3Q5ser_hs_i701-508_R1.bigWig"
+ser_hf_bed_file <- "~/ELNID001000000000535807/CUT_TAG/PeakCalling/macs2/03_0KCB_02SMTytgat_High-fatigue-1_H3Q5ser_hs_i702-508_R1.macs2.peaks.cut.bed" 
+ser_mf_bed_file <- "~/ELNID001000000000535807/CUT_TAG/PeakCalling/macs2/01_0KCA_02SMTytgat_Medium-fatigue-1_H3Q5ser_hs_i701-508_R1.macs2.peaks.cut.bed" 
+rna_hf_bw <- "~/ELNID001000000000535807/RNAseq/BIGWIG/02_P-02SNTytgat_High-fatigue-1_RNA-seq_hs_iA-D8.bw" 
+rna_lf_bw <- "~/ELNID001000000000535807/RNAseq/BIGWIG/01_P-02SNTytgat_Medium-fatigue-1_RNA-seq_hs_iA-C8.bw" 
+
 plot_gene_track(
-  "ADARB2",
+  "S100A13",
   atac_hf1_bw, atac_hf2_bw, atac_hf3_bw,
   atac_lf1_bw, atac_lf2_bw, atac_lf3_bw,
   atac_hf1_bed, atac_hf2_bed, atac_hf3_bed,
@@ -204,10 +207,8 @@ plot_gene_track(
   ser_hf_bigwig_file, ser_mf_bigwig_file,
   ser_hf_bed_file, ser_mf_bed_file,
   rna_hf_bw, rna_lf_bw, 
-  genome = "hg38",
-  edb = EnsDb.Hsapiens.v86,
-  window = 50000, 
+  window = 1000, 
   ct_y_top = 0.03,
-  atac_y_top = 1.5,
-  rna_y_top = 6
+  atac_y_top = 0.4,
+  rna_y_top = 150
 )

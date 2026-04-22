@@ -17,6 +17,8 @@ library(msigdbr)
 library(enrichplot)
 library(readr)
 library(tidyverse)
+library(biomaRt)
+
 
 
 combine_count_tables <- function(first_path, second_path){
@@ -219,12 +221,12 @@ volcano_plot <- function(df, plot_path){
   #df$delabel <- ifelse((df$StatSig != "NS") & (df$padj < 0.01), df$SYMBOL, NA)
   df$shape <- ifelse(!is.na(df$padj) & df$padj < 0.01 , TRUE, FALSE)
   # Order df by padj ascending, keep row indices of top 10
-  top10_idx <- order(df$padj)[1:400]
+  top_idx <- order(df$padj)[1:10]
   # Set all labels to NA first
   df$delabel <- NA
   
   # Assign SYMBOL as label only for top 10 with lowest padj and significant StatSig (not "NS")
-  df$delabel[top10_idx] <- ifelse(df$StatSig[top10_idx] != "NS", df$SYMBOL[top10_idx], NA)
+  df$delabel[top10_idx] <- ifelse(df$StatSig[top10_idx] != "NS", df$SYMBOL[top_idx], NA)
   
   ggplot(data = df, aes(x = log2FoldChange, y = -log10(pvalue), color = StatSig, label = delabel, shape = shape)) +
     geom_hline(yintercept = -log10(0.05), col = "gray", linetype = 'dashed') +
@@ -254,7 +256,7 @@ pathway_dotplot <- function(df, title, plot_path){
           legend.title = element_text(size = 10),
           legend.text = element_text(size = 8),
           plot.title = element_text(size = 14, hjust = 0.5))
-  ggsave(plot_pathplot_path, plot = p, dpi = 400, width = 12, height = 8)
+  ggsave(plot_path, plot = p, dpi = 400, width = 12, height = 8)
 }
 count_table_to_heatmap <- function(count_table, grouping_vector, plot_path){
   # Assume `mat` is a peaks x samples matrix
@@ -280,11 +282,11 @@ count_table_to_heatmap <- function(count_table, grouping_vector, plot_path){
   # )
   # dev.off()
 }
-count_table1_file <- "~/ELNID001000000000486355/Q52867_ATACseq/PeakCalling/consensus/consensus_peaks.mLb.clN.featureCounts.txt"
-count_table2_file <- "~/ELNID001000000000486355/ATACseq/PeakCalling/consensus/consensus_peaks.mLb.clN.featureCounts.txt"
-geneHancer_file <- "~/ELNID001000000000486355/DiffAnalysis/geneHancer_data/GeneHancer_v5.25.gff"
+count_table1_file <- "~/ELNID001000000000486355/data/Q52867_ATACseq/PeakCalling/consensus/consensus_peaks.mLb.clN.featureCounts.txt"
+count_table2_file <- "~/ELNID001000000000535807/data/ATACseq/PeakCalling/consensus/consensus_peaks.mLb.clN.featureCounts.txt"
+geneHancer_file <- "~/ELNID001000000000535807/analysis/geneHancer_data/GeneHancer_v5.25.gff"
 pchic_file <- "~/ELNID001000000000466898/output/epic/resources/pchic_annotated_grch38.csv"
-RESULTS_PATH_ATAC <- "~/ELNID001000000000486355/DiffAnalysis/ATAC/"
+RESULTS_PATH_ATAC <- "~/ELNID001000000000535807/analysis/ATAC/"
 count_columns <- c("X03_0KXN_02UCAUMC_Low.fatigue.3_ATAC_i3.3_REP1.mLb.clN.sorted.bam", 
                    "X08_0KXQ_02UCAUMC_High.fatigue.2_ATAC_i6.522_REP1.mLb.clN.sorted.bam",
                    "X02_0KXM_02UCAUMC_Low.fatigue.2_ATAC_i2.2_REP1.mLb.clN.sorted.bam",
@@ -337,9 +339,11 @@ dds <- DESeqDataSetFromMatrix(countData = full_count_table,
 keep <- rowSums(counts(dds)) >= 10 
 dds <- dds[keep, ]
 # remove sex chromosomes
+mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+G_list <- getBM(filters= "ensembl_gene_id", attributes= c("ensembl_gene_id","hgnc_symbol", "chromosome_name"),values=genes,mart= mart)
 autosomal_genes <- G_list$ensembl_gene_id[!G_list$chromosome_name %in% c("X", "Y", "chrX", "chrY")]
 dds <- dds[!grepl(c("chrX|chrY"), rownames(dds)), ]
-#dds <- estimateSizeFactors(dds)
+dds <- estimateSizeFactors(dds)
 dds <- DESeq(dds, fitType = "local", minReplicatesForReplace = Inf)
 vsd <- vst(dds, blind = TRUE)
 

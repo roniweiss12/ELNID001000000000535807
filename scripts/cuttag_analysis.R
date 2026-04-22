@@ -78,10 +78,10 @@ add_geneHancer_annotation <- function(gr, geneHancer_file){
   
 }
 
-count_table_file <- "~/ELNID001000000000486355/CUT_TAG/PeakCalling/featureCounts.txt"
-diffAnalysisRes_file <- "~/ELNID001000000000486355/DiffAnalysis/CUT_TAG/differentiallAnalysis_CUT_TAG_HighVSLow.csv"
-geneHancer_file <- "~/ELNID001000000000486355/DiffAnalysis/geneHancer_data/GeneHancer_v5.25.gff"
-annotated_peaks_file <- "~/ELNID001000000000486355/DiffAnalysis/CUT_TAG/annotatedDifferentialPeaks.txt"
+count_table_file <- "~/ELNID001000000000535807/CUT_TAG/PeakCalling/featureCounts.txt"
+diffAnalysisRes_file <- "~/ELNID001000000000535807/DiffAnalysis/CUT_TAG/differentiallAnalysis_CUT_TAG_HighVSLow.csv"
+geneHancer_file <- "~/ELNID001000000000535807/DiffAnalysis/geneHancer_data/GeneHancer_v5.25.gff"
+annotated_peaks_file <- "~/ELNID001000000000535807/DiffAnalysis/CUT_TAG/annotatedDifferentialPeaks.txt"
 samples <- c("Low_fatigue", "High_fatigue")
 
 ##read in and process count table and metadata
